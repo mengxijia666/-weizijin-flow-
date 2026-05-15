@@ -1,672 +1,1085 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>微资金付款流程示意</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #f0f0f0;
-      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
-      padding: 32px 16px;
-      color: #333;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:#f0f0f0;
+      font-family:"PingFang SC","Helvetica Neue",sans-serif;
+      padding:32px 20px 60px;
+      color:#1a1a1a;
     }
 
-    /* ---- 页面标题 ---- */
-    .page-title {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .page-title h1 { font-size: 1.5rem; color: #1a1a1a; margin-bottom: 6px; }
-    .page-title p { color: #888; font-size: 0.85rem; }
+    /* 页面标题 */
+    .page-header{text-align:center;margin-bottom:40px}
+    .page-header h1{font-size:1.4rem;color:#1a1a1a;margin-bottom:6px}
+    .page-header p{color:#888;font-size:.82rem}
 
-    /* ---- 流程段落标题 ---- */
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 40px 0 20px;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #444;
+    /* 流程段落 */
+    .section{margin-bottom:48px}
+    .section-label{
+      display:flex;align-items:center;gap:8px;
+      margin-bottom:20px;font-size:.9rem;font-weight:600;color:#333;
     }
-    .section-title::before {
-      content: '';
-      display: block;
-      width: 4px;
-      height: 20px;
-      background: #07c160;
-      border-radius: 2px;
+    .section-label::before{
+      content:'';display:block;width:4px;height:18px;
+      background:#07c160;border-radius:2px;
     }
 
-    /* ---- 手机框容器 ---- */
-    .flow-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-items: flex-start;
-      justify-content: center;
+    /* 手机排列行 */
+    .phones-row{
+      display:flex;flex-wrap:wrap;align-items:flex-start;
+      gap:0;
     }
-
-    .flow-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    .flow-item .step-label {
-      font-size: 0.75rem;
-      color: #888;
-      text-align: center;
-      max-width: 120px;
-      line-height: 1.4;
-    }
+    .phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
 
     /* 箭头 */
-    .arrow {
-      display: flex;
-      align-items: center;
-      padding-top: 60px;
-      color: #bbb;
-      font-size: 1.4rem;
+    .flow-arrow{
+      display:flex;align-items:center;padding-top:55px;
+      font-size:1rem;color:#bbb;padding-left:4px;padding-right:4px;
     }
 
-    /* ---- 手机外壳 ---- */
-    .phone {
-      width: 160px;
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-      overflow: hidden;
-      position: relative;
-      border: 1px solid #e8e8e8;
-    }
-    .phone-bar {
-      background: #fff;
-      padding: 10px 16px 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .phone-bar .back { color: #07c160; font-size: 0.75rem; }
-    .phone-bar .title { font-size: 0.8rem; font-weight: 600; flex: 1; text-align: center; color: #1a1a1a; }
-    .phone-body { padding: 12px; min-height: 220px; }
-
-    /* ---- 通用组件 ---- */
-    .amount-block {
-      text-align: center;
-      padding: 10px 0 12px;
-      border-bottom: 1px solid #f5f5f5;
-      margin-bottom: 10px;
-    }
-    .amount-block .merchant { font-size: 0.7rem; color: #888; margin-bottom: 4px; }
-    .amount-block .amount { font-size: 1.4rem; font-weight: 700; color: #1a1a1a; }
-    .amount-block .amount span { font-size: 0.9rem; }
-
-    .pay-option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      border-bottom: 1px solid #f5f5f5;
-      cursor: pointer;
-    }
-    .pay-option .icon {
-      width: 28px; height: 28px;
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem;
-      flex-shrink: 0;
-    }
-    .pay-option .info { flex: 1; }
-    .pay-option .info .name { font-size: 0.75rem; font-weight: 500; color: #1a1a1a; }
-    .pay-option .info .sub { font-size: 0.65rem; color: #888; margin-top: 1px; }
-    .pay-option .check { color: #07c160; font-size: 0.9rem; }
-    .pay-option.selected { background: #f7fff9; border-radius: 6px; padding-left: 4px; }
-
-    .btn-green {
-      display: block;
-      width: 100%;
-      background: #07c160;
-      color: #fff;
-      border: none;
-      border-radius: 22px;
-      padding: 9px 0;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-align: center;
-      margin-top: 12px;
-    }
-    .btn-gray {
-      display: block;
-      width: 100%;
-      background: #f5f5f5;
-      color: #07c160;
-      border: none;
-      border-radius: 22px;
-      padding: 9px 0;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-align: center;
-      margin-top: 12px;
+    /* 步骤标签 */
+    .step-tag{
+      font-size:.72rem;color:#888;text-align:center;
+      max-width:130px;line-height:1.5;
     }
 
-    /* 密码输入框 */
-    .pwd-dots {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 16px 0 12px;
-    }
-    .pwd-dot {
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      background: #1a1a1a;
-    }
-    .pwd-dot.empty { background: transparent; border: 1px solid #ccc; }
-    .numpad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: #e0e0e0;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 4px;
-    }
-    .numpad .key {
-      background: #fff;
-      padding: 8px 0;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #333;
-    }
-    .numpad .key.dark { background: #d1d1d1; }
-
-    /* 成功页面 */
-    .success-icon {
-      text-align: center;
-      padding: 24px 0 8px;
-    }
-    .success-icon .circle {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: #07c160;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 10px;
-      font-size: 1.4rem;
-      color: #fff;
-    }
-    .success-icon .text { font-size: 0.9rem; font-weight: 600; color: #1a1a1a; }
-    .success-icon .sub { font-size: 0.65rem; color: #888; margin-top: 4px; }
-
-    /* 充值账户信息 */
-    .bank-info-card {
-      background: #f7f7f7;
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 0.68rem;
-      color: #444;
-      line-height: 1.8;
-      margin-top: 8px;
-    }
-    .bank-info-card .row { display: flex; justify-content: space-between; }
-    .bank-info-card .copy-btn {
-      color: #07c160;
-      font-size: 0.65rem;
-      border: 1px solid #07c160;
-      border-radius: 3px;
-      padding: 1px 5px;
+    /* ===== 手机外壳 ===== */
+    .phone{
+      width:150px;background:#fff;
+      border-radius:20px;
+      box-shadow:0 3px 16px rgba(0,0,0,.13);
+      border:1px solid #e5e5e5;
+      overflow:hidden;
+      position:relative;
     }
 
-    /* 人脸验证 */
-    .face-block {
-      text-align: center;
-      padding: 12px 0;
+    /* 状态栏 */
+    .status-bar{
+      background:#fff;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:6px 12px 2px;
+      font-size:.55rem;color:#333;
     }
-    .face-circle {
-      width: 64px; height: 64px;
-      border-radius: 50%;
-      border: 2px dashed #07c160;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 10px;
-      font-size: 1.6rem;
-    }
-    .face-block .tip { font-size: 0.68rem; color: #666; line-height: 1.5; }
+    .status-bar .time{font-weight:600;font-size:.65rem}
+    .status-bar .icons{display:flex;gap:3px;align-items:center;font-size:.55rem}
 
-    /* 余额不足提示 */
-    .insufficient {
-      font-size: 0.65rem;
-      color: #fa8c16;
-      margin-top: 2px;
+    /* 导航栏 */
+    .nav-bar{
+      display:flex;align-items:center;
+      padding:4px 10px 6px;
+      border-bottom:1px solid #f2f2f2;
+      gap:4px;
+    }
+    .nav-bar .nav-back{color:#07c160;font-size:.7rem;white-space:nowrap}
+    .nav-bar .nav-title{flex:1;text-align:center;font-size:.72rem;font-weight:600;color:#1a1a1a}
+    .nav-bar .nav-close{color:#999;font-size:.8rem}
+
+    /* 微企付顶部（带服务logo） */
+    .wxpay-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 10px 6px;
+      border-bottom:1px solid #f2f2f2;
+    }
+    .wxpay-header .logo-area{display:flex;align-items:center;gap:4px}
+    .wxpay-header .logo-icon{
+      width:20px;height:20px;border-radius:5px;
+      background:#07c160;display:flex;align-items:center;justify-content:center;
+      font-size:.6rem;color:#fff;font-weight:700;
+    }
+    .wxpay-header .logo-text{font-size:.62rem;color:#555}
+    .wxpay-header .close-btn{color:#999;font-size:.9rem;line-height:1}
+
+    /* 页面内容区 */
+    .phone-body{padding:10px}
+
+    /* 金额区 */
+    .amount-section{
+      padding:8px 0 10px;border-bottom:1px solid #f2f2f2;margin-bottom:10px;
+      text-align:center;
+    }
+    .amount-section .merchant{font-size:.62rem;color:#888;margin-bottom:3px}
+    .amount-section .merchant span{color:#333}
+    .amount-section .amount{font-size:1.4rem;font-weight:700;color:#1a1a1a}
+    .amount-section .amount em{font-size:.85rem;font-weight:400}
+
+    /* 付款方式标题行 */
+    .pay-mode-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:8px;
+    }
+    .pay-mode-header .label{font-size:.7rem;color:#333;font-weight:600}
+    .pay-mode-header .service{
+      display:flex;align-items:center;gap:3px;
+      font-size:.62rem;color:#888;
     }
 
-    /* 设置密码 */
-    .pwd-hint { font-size: 0.68rem; color: #888; text-align: center; margin-bottom: 8px; }
-
-    /* 订单列表 */
-    .order-item {
-      border: 1px solid #f0f0f0;
-      border-radius: 8px;
-      padding: 8px;
-      margin-bottom: 8px;
-      font-size: 0.68rem;
+    /* 付款选项 */
+    .pay-option{
+      display:flex;align-items:center;gap:7px;
+      padding:7px 0;border-bottom:1px solid #f5f5f5;
     }
-    .order-item .order-no { color: #888; }
-    .order-item .order-amount { font-weight: 600; color: #1a1a1a; font-size: 0.8rem; margin-top: 3px; }
-    .order-item .expire { color: #ff4d4f; font-size: 0.62rem; margin-top: 2px; }
-
-    .order-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 8px;
-      border-top: 1px solid #f0f0f0;
-      margin-top: 4px;
+    .pay-option:last-of-type{border-bottom:none}
+    .pay-icon{
+      width:26px;height:26px;border-radius:6px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.75rem;color:#fff;font-weight:700;
     }
-    .order-footer .total { font-size: 0.72rem; color: #333; }
-    .order-footer .total span { font-weight: 700; color: #1a1a1a; font-size: 0.9rem; }
-    .btn-brown {
-      background: #8B6347;
-      color: #fff;
-      border: none;
-      border-radius: 16px;
-      padding: 5px 14px;
-      font-size: 0.72rem;
+    .pay-info{flex:1;min-width:0}
+    .pay-info .pname{font-size:.72rem;color:#1a1a1a;font-weight:500}
+    .pay-info .psub{font-size:.6rem;color:#888;margin-top:1px}
+    .pay-info .pwarn{font-size:.6rem;color:#fa8c16;margin-top:1px}
+    .pay-radio{
+      width:16px;height:16px;border-radius:50%;border:1.5px solid #ccc;
+      flex-shrink:0;
+    }
+    .pay-radio.checked{
+      border-color:#07c160;background:#07c160;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .pay-radio.checked::after{
+      content:'✓';color:#fff;font-size:.55rem;font-weight:700;
     }
 
-    /* 授权弹窗 */
-    .modal-overlay {
-      background: rgba(0,0,0,0.4);
-      border-radius: 0;
-      padding: 30px 10px 10px;
-      min-height: 220px;
-      display: flex;
-      align-items: flex-end;
+    /* 展开的子账户 */
+    .sub-account{
+      margin:4px 0 4px 33px;
+      background:#f9f9f9;border-radius:6px;
+      padding:6px 8px;
+      border-left:3px solid #07c160;
     }
-    .modal-box {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px;
-      width: 100%;
-      text-align: center;
+    .sub-account .sa-name{font-size:.65rem;color:#1a1a1a;font-weight:500}
+    .sub-account .sa-sub{font-size:.58rem;color:#888;margin-top:2px}
+    .sub-account-row{display:flex;justify-content:space-between;align-items:center}
+    .sa-check{color:#07c160;font-size:.8rem;font-weight:700}
+
+    /* 协议文字 */
+    .agreement{font-size:.58rem;color:#888;text-align:center;margin:8px 0 6px;line-height:1.4}
+    .agreement a{color:#576b95}
+
+    /* 按钮 */
+    .btn-green{
+      display:block;width:100%;background:#07c160;color:#fff;
+      border:none;border-radius:22px;padding:9px 0;
+      font-size:.75rem;font-weight:600;text-align:center;
     }
-    .modal-box .mtitle { font-size: 0.78rem; font-weight: 600; margin-bottom: 6px; }
-    .modal-box .msub { font-size: 0.65rem; color: #888; margin-bottom: 12px; }
-    .modal-btns { display: flex; gap: 8px; }
-    .modal-btns .cancel { flex: 1; padding: 7px; border: 1px solid #ddd; border-radius: 20px; font-size: 0.72rem; color: #666; background: #fff; }
-    .modal-btns .confirm { flex: 1; padding: 7px; background: #07c160; border: none; border-radius: 20px; font-size: 0.72rem; color: #fff; }
+    .btn-green.dim{background:#07c160;opacity:.5}
+    .btn-gray{
+      display:block;width:100%;background:#f5f5f5;color:#07c160;
+      border:none;border-radius:22px;padding:8px 0;
+      font-size:.75rem;font-weight:600;text-align:center;
+    }
+    .btn-brown{
+      background:#C9A063;color:#fff;border:none;
+      border-radius:18px;padding:6px 14px;font-size:.72rem;font-weight:600;
+    }
 
-    /* 分割线 */
-    hr.divider { border: none; border-top: 1px dashed #ddd; margin: 32px 0; }
+    /* 订单卡片 */
+    .order-card{
+      background:#fff;border-radius:8px;
+      border:1px solid #f0f0f0;
+      padding:9px;margin-bottom:7px;
+    }
+    .order-card .oc-top{
+      display:flex;justify-content:space-between;align-items:flex-start;
+    }
+    .order-card .oc-no{font-size:.65rem;color:#333}
+    .order-card .oc-detail{font-size:.6rem;color:#576b95}
+    .order-card .oc-expire-red{font-size:.58rem;color:#f5222d;margin-top:2px}
+    .order-card .oc-expire-gray{font-size:.58rem;color:#888;margin-top:2px}
+    .order-card .oc-date{font-size:.58rem;color:#888;margin-top:1px}
+    .order-card .oc-bottom{
+      display:flex;align-items:center;gap:5px;margin-top:5px;
+    }
+    .order-card .oc-goods{display:flex;gap:3px}
+    .goods-dot{
+      width:18px;height:18px;border-radius:4px;
+      display:flex;align-items:center;justify-content:center;font-size:.65rem;
+    }
+    .order-card .oc-amount{font-size:.78rem;font-weight:600;color:#1a1a1a;margin-left:auto}
+    .order-card .oc-count{font-size:.58rem;color:#888}
+    .order-check{
+      width:17px;height:17px;border-radius:50%;border:1.5px solid #C9A063;
+      flex-shrink:0;margin-top:1px;margin-right:3px;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .order-check.checked{background:#C9A063;border-color:#C9A063}
+    .order-check.checked::after{content:'✓';color:#fff;font-size:.55rem;font-weight:700}
 
-    /* 响应式 */
-    @media (max-width: 600px) {
-      .arrow { display: none; }
-      .flow-row { gap: 20px; }
+    /* 订单底部 */
+    .order-footer{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 0 2px;border-top:1px solid #f0f0f0;margin-top:4px;
+    }
+    .order-footer-left{display:flex;align-items:center;gap:5px}
+    .oc-check-all{
+      width:17px;height:17px;border-radius:50%;border:1.5px solid #ccc;
+    }
+    .oc-check-all-label{font-size:.65rem;color:#333}
+    .oc-total{font-size:.65rem;color:#333}
+    .oc-total span{font-weight:700;font-size:.78rem}
+    .order-footer-right{}
+
+    /* 付款方式展示行（订单底部） */
+    .pay-mode-row{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:7px 0 5px;border-top:1px solid #f0f0f0;
+    }
+    .pay-mode-row .pm-label{font-size:.65rem;color:#333}
+    .pay-mode-row .pm-val{
+      display:flex;align-items:center;gap:4px;font-size:.65rem;color:#333;
+    }
+    .pm-logo{
+      width:16px;height:16px;border-radius:3px;background:#07c160;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.5rem;color:#fff;font-weight:700;
+    }
+
+    /* 人脸验证页 */
+    .face-page{text-align:center;padding:8px 0 4px}
+    .face-title{font-size:.72rem;font-weight:600;color:#1a1a1a;margin-bottom:3px}
+    .face-sub{font-size:.62rem;color:#07c160}
+    .face-icon-wrap{
+      margin:12px auto 12px;
+      width:52px;height:52px;border-radius:50%;
+      background:#e8f9f0;border:2px solid #07c160;
+      display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+    }
+    .agreement-row{
+      display:flex;align-items:center;gap:5px;
+      margin-bottom:8px;padding:0 2px;
+    }
+    .agree-check{
+      width:14px;height:14px;border-radius:50%;border:1.5px solid #07c160;
+      flex-shrink:0;background:#07c160;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .agree-check::after{content:'✓';color:#fff;font-size:.45rem;font-weight:700}
+    .agreement-row span{font-size:.6rem;color:#888}
+    .agreement-row a{color:#576b95;text-decoration:none}
+
+    /* 等待页 */
+    .wait-page{text-align:center;padding:20px 0 10px}
+    .wait-avatar{
+      width:52px;height:52px;border-radius:50%;background:#222;
+      margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+    }
+    .wait-title{font-size:.72rem;color:#1a1a1a;font-weight:600}
+
+    /* 成功页 */
+    .success-page{text-align:center;padding:30px 0 10px}
+    .success-circle{
+      width:50px;height:50px;border-radius:50%;background:#07c160;
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 10px;font-size:1.3rem;color:#fff;
+    }
+    .success-title{font-size:.88rem;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+    .success-sub{font-size:.62rem;color:#888}
+
+    /* 弹窗 */
+    .modal-bg{
+      background:rgba(0,0,0,.45);
+      padding:20px 8px 0;
+      margin:0 -10px -10px;
+      border-radius:0 0 20px 20px;
+    }
+    .modal-card{
+      background:#fff;border-radius:10px;padding:14px 12px 10px;
+      text-align:center;
+    }
+    .modal-card .mc-title{font-size:.72rem;font-weight:600;margin-bottom:4px}
+    .modal-card .mc-sub{font-size:.6rem;color:#888;margin-bottom:10px}
+    .modal-btns{display:flex;gap:8px}
+    .modal-btns .mb-cancel{
+      flex:1;padding:7px 0;border-radius:20px;
+      border:1px solid #e5e5e5;background:#fff;
+      font-size:.68rem;color:#555;
+    }
+    .modal-btns .mb-allow{
+      flex:1;padding:7px 0;border-radius:20px;
+      border:none;background:#576b95;
+      font-size:.68rem;color:#fff;
+    }
+
+    /* 设置密码页 */
+    .pwd-page{text-align:center;padding:6px 0 0}
+    .pwd-title{font-size:.75rem;font-weight:600;color:#1a1a1a;margin-bottom:3px}
+    .pwd-hint{font-size:.62rem;color:#888;margin-bottom:10px}
+    .pwd-dots{
+      display:flex;justify-content:center;gap:10px;
+      margin-bottom:12px;
+    }
+    .pd{
+      width:11px;height:11px;border-radius:50%;
+      border:1.5px solid #ccc;
+    }
+    .pd.filled{background:#1a1a1a;border-color:#1a1a1a}
+    .numpad{
+      display:grid;grid-template-columns:repeat(3,1fr);
+      border:1px solid #e5e5e5;border-radius:6px;overflow:hidden;
+    }
+    .nk{
+      padding:8px 0;text-align:center;font-size:.82rem;color:#1a1a1a;
+      border-right:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;
+      background:#fff;
+    }
+    .nk:nth-child(3n){border-right:none}
+    .nk:nth-last-child(-n+3){border-bottom:none}
+    .nk.dark{background:#d0d0d0;color:#333}
+    .nk.dark2{background:#f5f5f5}
+
+    /* 充值页 */
+    .recharge-balance{margin-bottom:10px}
+    .rb-label{font-size:.62rem;color:#888;margin-bottom:2px}
+    .rb-amount{font-size:1.1rem;font-weight:700;color:#1a1a1a}
+    .recharge-step{margin-bottom:8px}
+    .rs-title{font-size:.65rem;color:#888;margin-bottom:5px}
+    .rs-card{
+      border:1px solid #e8e8e8;border-radius:7px;
+      padding:8px;font-size:.65rem;
+    }
+    .rs-row{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:3px 0;border-bottom:1px solid #f5f5f5;
+    }
+    .rs-row:last-child{border-bottom:none}
+    .rs-row .rk{color:#888}
+    .rs-row .rv{color:#333;display:flex;align-items:center;gap:5px}
+    .copy-btn{
+      font-size:.58rem;color:#07c160;
+      border:1px solid #07c160;border-radius:3px;padding:1px 4px;
+    }
+    .notfound-btn{
+      font-size:.58rem;color:#888;
+      border:1px solid #ccc;border-radius:3px;padding:1px 4px;
+    }
+    .recharge-notice{
+      font-size:.58rem;color:#fa8c16;margin-top:7px;line-height:1.5;
+    }
+
+    /* 人脸授权弹窗（系统级） */
+    .sys-modal-bg{
+      background:rgba(0,0,0,.5);
+      margin:0 -10px -10px;
+      padding:20px 12px 0;
+      border-radius:0 0 20px 20px;
+    }
+    .sys-modal{
+      background:#fff;border-radius:10px;
+      padding:14px 12px 10px;
+    }
+    .sys-modal .sm-title{font-size:.7rem;font-weight:600;text-align:center;margin-bottom:8px}
+    .sys-modal .sm-body{font-size:.6rem;color:#555;line-height:1.5;margin-bottom:10px}
+    .sys-modal .sm-btns{display:flex;gap:8px}
+    .sm-cancel{flex:1;padding:7px 0;border-radius:20px;border:1px solid #e5e5e5;background:#fff;font-size:.68rem;color:#555}
+    .sm-confirm{flex:1;padding:7px 0;border-radius:20px;border:none;background:#07c160;font-size:.68rem;color:#fff}
+
+    /* 微信系统授权（深色底） */
+    .wechat-sys-modal{
+      position:absolute;bottom:0;left:0;right:0;
+      background:rgba(0,0,0,.55);padding:10px 8px;
+      border-radius:0 0 20px 20px;
+    }
+    .wsm-card{background:#fff;border-radius:10px;padding:12px}
+    .wsm-title{font-size:.7rem;font-weight:600;text-align:center;margin-bottom:8px}
+    .wsm-btns{display:flex;gap:8px}
+    .wsm-cancel{flex:1;padding:6px 0;border-radius:20px;border:1px solid #e0e0e0;background:#fff;font-size:.68rem;color:#555}
+    .wsm-allow{flex:1;padding:6px 0;border-radius:20px;border:none;background:#576b95;font-size:.68rem;color:#fff}
+
+    /* 已通过提示页 */
+    .passed-page{text-align:center;padding:50px 0 20px}
+    .passed-icon{
+      width:48px;height:48px;border-radius:50%;background:#07c160;
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 10px;font-size:1.3rem;color:#fff;
+    }
+    .passed-text{font-size:.82rem;font-weight:600;color:#1a1a1a}
+
+    @media(max-width:700px){
+      .flow-arrow{display:none}
+      .phones-row{gap:16px;justify-content:center}
     }
   </style>
 </head>
 <body>
 
-<div class="page-title">
+<div class="page-header">
   <h1>🏦 微资金付款流程示意</h1>
-  <p>基于交通银行三级账户体系 · 微企付小程序</p>
+  <p>微企付 · 交通银行三级账户体系</p>
 </div>
 
-<!-- ===== 第一部分：首次使用密码设置 ===== -->
-<div class="section-title">首次使用 · 密码设置流程</div>
-<div class="flow-row">
+<!-- ===================== 流程一：首次使用密码设置 ===================== -->
+<div class="section">
+  <div class="section-label">首次使用 · 密码设置流程</div>
+  <div class="phones-row">
 
-  <!-- Step 1: 选择付款方式 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">腾讯支付助手</span></div>
-      <div class="phone-body">
-        <div class="amount-block">
-          <div class="merchant">XXXX烟草分公司</div>
-          <div class="amount"><span>¥</span>12,000.00</div>
+    <!-- 1. 选择订单 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <div class="pay-option selected">
-          <div class="icon" style="background:#e8f9f0">💰</div>
-          <div class="info">
-            <div class="name">微资金</div>
-            <div class="sub">交通银行 余额 ¥1,388.08</div>
+        <div class="phone-body">
+          <!-- 订单1 -->
+          <div class="order-card">
+            <div class="oc-top">
+              <div class="order-check checked"></div>
+              <div style="flex:1">
+                <div class="oc-no">订货单号：589258214242</div>
+                <div class="oc-date">2023-12-22</div>
+                <div class="oc-expire-red">今日15:00后将作废</div>
+              </div>
+              <div class="oc-detail">详情 ›</div>
+            </div>
+            <div class="oc-bottom">
+              <div class="oc-goods">
+                <div class="goods-dot" style="background:#e8f5e9">🌿</div>
+                <div class="goods-dot" style="background:#fce4ec">🍎</div>
+              </div>
+              <div style="flex:1;margin-left:4px">
+                <div class="oc-count">共3件物料</div>
+              </div>
+              <div class="oc-amount">¥400.00</div>
+            </div>
           </div>
-          <div class="check">✓</div>
+          <!-- 订单2 -->
+          <div class="order-card">
+            <div class="oc-top">
+              <div class="order-check checked"></div>
+              <div style="flex:1">
+                <div class="oc-no">订货单号：589258214212</div>
+                <div class="oc-date">2023-12-22</div>
+                <div class="oc-expire-gray">明日15:00后将作废</div>
+              </div>
+              <div class="oc-detail">详情 ›</div>
+            </div>
+            <div class="oc-bottom">
+              <div class="oc-goods">
+                <div class="goods-dot" style="background:#e8f5e9">🌿</div>
+                <div class="goods-dot" style="background:#fce4ec">🍑</div>
+                <div class="goods-dot" style="background:#212121;border-radius:4px">⬛</div>
+              </div>
+              <div style="flex:1;margin-left:4px"><div class="oc-count">共3件物料</div></div>
+              <div class="oc-amount">¥355.64</div>
+            </div>
+          </div>
+          <!-- 付款方式行 -->
+          <div class="pay-mode-row">
+            <div class="pm-label">付款方式</div>
+            <div class="pm-val">
+              <div class="pm-logo">企</div>
+              <span>腾讯微企付</span>
+            </div>
+          </div>
+          <!-- 底部全选+付款 -->
+          <div class="order-footer">
+            <div class="order-footer-left">
+              <div class="oc-check-all"></div>
+              <span class="oc-check-all-label">全选(4)</span>
+            </div>
+            <div class="oc-total">合计：<span>¥755.64</span></div>
+            <button class="btn-brown">去付款</button>
+          </div>
         </div>
-        <div class="pay-option">
-          <div class="icon" style="background:#fff1e6">💳</div>
-          <div class="info"><div class="name">个人银行卡</div></div>
-        </div>
-        <div class="pay-option">
-          <div class="icon" style="background:#f0f4ff">🏢</div>
-          <div class="info"><div class="name">企业网银</div></div>
-        </div>
-        <button class="btn-green">开启服务，继续付款</button>
       </div>
+      <div class="step-tag">① 选择订单<br>点击「去付款」</div>
     </div>
-    <div class="step-label">① 选择微资金<br>首次需开启服务</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 2: 人脸验证 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">进行人脸验证</span></div>
-      <div class="phone-body">
-        <div class="face-block">
-          <div class="face-circle">😊</div>
-          <div class="tip">请将脸部对准框内<br>系统将自动完成识别</div>
+    <!-- 2. 选择付款方式（首次，未开通） -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <div style="display:flex;align-items:center;gap:5px;margin:10px 0 6px;font-size:0.68rem;color:#666">
-          <input type="checkbox" checked> 我已同意《人脸识别授权协议》
+        <div class="wxpay-header">
+          <div class="logo-area">
+            <div class="logo-icon">企</div>
+            <span class="logo-text">腾讯微企付 提供服务 ›</span>
+          </div>
+          <span class="nav-close">×</span>
         </div>
-        <button class="btn-green">同意并前往人脸识别</button>
+        <div class="phone-body">
+          <div class="amount-section">
+            <div class="merchant">商户简称 <span>XXXX烟草分公司</span></div>
+            <div class="amount"><em>¥</em>12000.00</div>
+          </div>
+          <div class="pay-mode-header">
+            <span class="label">选择付款方式</span>
+            <span class="service">🎧 联系客服</span>
+          </div>
+          <!-- 微资金（未选中，点击中） -->
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#1989fa">💰</div>
+            <div class="pay-info">
+              <div class="pname">微资金</div>
+            </div>
+            <div class="pay-radio"></div>
+          </div>
+          <!-- 个人银行卡 -->
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#1989fa">💳</div>
+            <div class="pay-info"><div class="pname">个人银行卡</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <!-- 中国银行 -->
+          <div class="pay-option" style="padding-left:33px">
+            <div class="pay-icon" style="background:#e53935;width:22px;height:22px;font-size:.6rem">中</div>
+            <div class="pay-info"><div class="pname" style="font-size:.65rem">中国银行(储蓄卡)</div></div>
+            <div class="pay-radio checked"></div>
+          </div>
+          <!-- 企业网银 -->
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#f5730e">🏢</div>
+            <div class="pay-info"><div class="pname">企业网银</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <!-- 分享给好友 -->
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#7b1fa2">👥</div>
+            <div class="pay-info"><div class="pname">分享给好友付款</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="agreement">我已同意<a>《腾讯微企付服务协议》</a>、<a>《隐私政策》</a></div>
+          <button class="btn-green">开启服务，继续付款</button>
+        </div>
       </div>
+      <div class="step-tag">② 选择微资金<br>首次需开启服务</div>
     </div>
-    <div class="step-label">② 人脸验证<br>身份核实</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 3: 验证通过 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="title">腾讯微企付</span></div>
-      <div class="phone-body">
-        <div class="success-icon" style="padding-top:16px">
-          <div class="circle">✓</div>
-          <div class="text">已通过</div>
+    <!-- 3. 人脸验证（协议未勾） -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <div class="modal-overlay" style="margin:0 -12px -12px;border-radius:0 0 24px 24px">
-          <div class="modal-box">
-            <div class="mtitle">即将打开"腾讯微企付"小程序</div>
-            <div class="modal-btns">
-              <button class="cancel">取消</button>
-              <button class="confirm">允许</button>
+        <div class="nav-bar">
+          <span class="nav-back">‹</span>
+          <span class="nav-title">进行人脸验证</span>
+          <span></span>
+        </div>
+        <div class="phone-body">
+          <div class="face-page">
+            <div class="face-title">进行人脸验证</div>
+            <div class="face-sub">请 **禄 刷脸认证</div>
+            <div class="face-icon-wrap">🤳</div>
+          </div>
+          <div class="agreement-row" style="justify-content:center">
+            <div style="width:14px;height:14px;border-radius:50%;border:1.5px solid #ccc;flex-shrink:0"></div>
+            <span>我已同意<a style="color:#576b95">《人脸识别授权协议》</a></span>
+          </div>
+          <button class="btn-green dim">前往人脸识别</button>
+        </div>
+      </div>
+      <div class="step-tag">③ 人脸验证<br>勾选协议后可操作</div>
+    </div>
+
+    <div class="flow-arrow">→</div>
+
+    <!-- 4. 人脸验证（协议已勾） -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-back">‹</span>
+          <span class="nav-title">进行人脸验证</span>
+          <span></span>
+        </div>
+        <div class="phone-body">
+          <div class="face-page">
+            <div class="face-title">进行人脸验证</div>
+            <div class="face-sub">请 **禄 刷脸认证</div>
+            <div class="face-icon-wrap">🤳</div>
+          </div>
+          <div class="agreement-row" style="justify-content:center">
+            <div class="agree-check"></div>
+            <span>我已同意<a style="color:#576b95">《人脸识别授权协议》</a></span>
+          </div>
+          <button class="btn-green">同意并前往人脸识别</button>
+        </div>
+      </div>
+      <div class="step-tag">④ 勾选协议<br>点击前往识别</div>
+    </div>
+
+    <div class="flow-arrow">→</div>
+
+    <!-- 5. 系统授权：请稍候 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-back">‹</span>
+          <span class="nav-title">进行人脸验证</span>
+          <span></span>
+        </div>
+        <div class="phone-body">
+          <div class="wait-page">
+            <div class="wait-avatar">😊</div>
+            <div class="wait-title">请稍候</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-tag">⑤ 等待识别<br>系统核验中</div>
+    </div>
+
+    <div class="flow-arrow">→</div>
+
+    <!-- 6. 已通过 + 跳转小程序弹窗 -->
+    <div class="phone-wrap">
+      <div class="phone" style="min-height:220px;position:relative">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nav-bar">
+          <span></span>
+          <span class="nav-title">腾讯微企付</span>
+          <span></span>
+        </div>
+        <div class="phone-body" style="padding-bottom:0">
+          <div class="passed-page">
+            <div class="passed-icon">✓</div>
+            <div class="passed-text">已通过</div>
+          </div>
+        </div>
+        <div class="wechat-sys-modal">
+          <div class="wsm-card">
+            <div class="wsm-title">即将打开"腾讯微企付"小程序</div>
+            <div class="wsm-btns">
+              <button class="wsm-cancel">取消</button>
+              <button class="wsm-allow">允许</button>
             </div>
           </div>
         </div>
       </div>
+      <div class="step-tag">⑥ 识别通过<br>跳转微企付小程序</div>
     </div>
-    <div class="step-label">③ 验证通过<br>跳转小程序</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 4: 设置密码 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">设置操作密码</span></div>
-      <div class="phone-body">
-        <div class="pwd-hint">密码用于资金操作和身份验证</div>
-        <div class="pwd-dots">
-          <div class="pwd-dot"></div><div class="pwd-dot"></div><div class="pwd-dot"></div>
-          <div class="pwd-dot empty"></div><div class="pwd-dot empty"></div><div class="pwd-dot empty"></div>
+    <!-- 7. 设置密码 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <div class="numpad">
-          <div class="key">1</div><div class="key">2</div><div class="key">3</div>
-          <div class="key">4</div><div class="key">5</div><div class="key">6</div>
-          <div class="key">7</div><div class="key">8</div><div class="key">9</div>
-          <div class="key dark"></div><div class="key">0</div><div class="key dark">⌫</div>
+        <div class="nav-bar">
+          <span class="nav-back">‹</span>
+          <span class="nav-title">设置操作密码</span>
+          <span></span>
+        </div>
+        <div class="phone-body">
+          <div class="pwd-page">
+            <div class="pwd-hint">密码用于资金操作和身份验证</div>
+            <div class="pwd-dots">
+              <div class="pd filled"></div><div class="pd filled"></div><div class="pd filled"></div>
+              <div class="pd"></div><div class="pd"></div><div class="pd"></div>
+            </div>
+          </div>
+          <div class="numpad">
+            <div class="nk">1</div><div class="nk">2</div><div class="nk">3</div>
+            <div class="nk">4</div><div class="nk">5</div><div class="nk">6</div>
+            <div class="nk">7</div><div class="nk">8</div><div class="nk">9</div>
+            <div class="nk dark2"></div><div class="nk">0</div><div class="nk dark">⌫</div>
+          </div>
         </div>
       </div>
+      <div class="step-tag">⑦ 设置6位<br>操作密码</div>
     </div>
-    <div class="step-label">④ 设置操作密码<br>6位数字</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 5: 设置成功 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="title">腾讯微企付</span></div>
-      <div class="phone-body">
-        <div class="success-icon" style="padding-top:40px">
-          <div class="circle">✓</div>
-          <div class="text">设置成功</div>
-          <div class="sub">请返回继续操作</div>
+    <!-- 8. 确认密码 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <button class="btn-gray" style="margin-top:30px">完成</button>
+        <div class="nav-bar">
+          <span class="nav-back">‹</span>
+          <span class="nav-title">再次确认操作密码</span>
+          <span></span>
+        </div>
+        <div class="phone-body">
+          <div class="pwd-page">
+            <div class="pwd-hint">密码用于资金操作和身份验证</div>
+            <div class="pwd-dots">
+              <div class="pd filled"></div><div class="pd filled"></div><div class="pd filled"></div>
+              <div class="pd filled"></div><div class="pd filled"></div><div class="pd filled"></div>
+            </div>
+          </div>
+          <div class="numpad">
+            <div class="nk">1</div><div class="nk">2</div><div class="nk">3</div>
+            <div class="nk">4</div><div class="nk">5</div><div class="nk">6</div>
+            <div class="nk">7</div><div class="nk">8</div><div class="nk">9</div>
+            <div class="nk dark2"></div><div class="nk">0</div><div class="nk dark">⌫</div>
+          </div>
+          <button class="btn-green" style="margin-top:8px">确定</button>
+        </div>
       </div>
+      <div class="step-tag">⑧ 再次确认密码<br>点击确定</div>
     </div>
-    <div class="step-label">⑤ 密码设置成功<br>返回付款</div>
-  </div>
 
+    <div class="flow-arrow">→</div>
+
+    <!-- 9. 设置成功 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nav-bar">
+          <span></span>
+          <span class="nav-title">腾讯微企付</span>
+          <span></span>
+        </div>
+        <div class="phone-body">
+          <div class="success-page">
+            <div class="success-circle">✓</div>
+            <div class="success-title">设置成功</div>
+            <div class="success-sub">请返回继续操作</div>
+          </div>
+          <button class="btn-gray" style="margin-top:20px">完成</button>
+        </div>
+      </div>
+      <div class="step-tag">⑨ 密码设置成功<br>返回付款</div>
+    </div>
+
+  </div>
 </div>
 
-<hr class="divider">
+<!-- ===================== 流程二：正常付款（余额充足） ===================== -->
+<div class="section">
+  <div class="section-label">付款流程 · 余额充足</div>
+  <div class="phones-row">
 
-<!-- ===== 第二部分：正常付款流程（余额充足） ===== -->
-<div class="section-title">付款流程 · 余额充足</div>
-<div class="flow-row">
-
-  <!-- Step 1: 订单列表 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">待付款订单</span></div>
-      <div class="phone-body">
-        <div class="order-item">
-          <div class="order-no">订货单号：589258214242</div>
-          <div class="expire">今日 15:00 后将作废</div>
-          <div class="order-amount">¥755.64 · 共3件物料</div>
+    <!-- 1. 选择付款方式（微资金-交通银行，已选） -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <div class="order-item">
-          <div class="order-no">订货单号：589258214212</div>
-          <div style="color:#888;font-size:0.62rem">明日 15:00 后将作废</div>
-          <div class="order-amount">¥400.00 · 共2件物料</div>
-        </div>
-        <div class="order-footer">
-          <div class="total">合计：<span>¥1,155.64</span></div>
-          <button class="btn-brown">去付款</button>
-        </div>
-      </div>
-    </div>
-    <div class="step-label">① 选择订单<br>点击去付款</div>
-  </div>
-
-  <div class="arrow">→</div>
-
-  <!-- Step 2: 选择付款方式（余额充足） -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">腾讯支付助手</span></div>
-      <div class="phone-body">
-        <div class="amount-block">
-          <div class="merchant">XXXX烟草分公司</div>
-          <div class="amount"><span>¥</span>12,000.00</div>
-        </div>
-        <div class="pay-option selected">
-          <div class="icon" style="background:#e8f9f0">💰</div>
-          <div class="info">
-            <div class="name">微资金</div>
-            <div class="sub">交通银行(0818) · 余额充足</div>
+        <div class="wxpay-header">
+          <div class="logo-area">
+            <div class="logo-icon">企</div>
+            <span class="logo-text">腾讯微企付 提供服务 ›</span>
           </div>
-          <div class="check">✓</div>
+          <span class="nav-close">×</span>
         </div>
-        <div class="pay-option">
-          <div class="icon" style="background:#fff1e6">💳</div>
-          <div class="info"><div class="name">个人银行卡</div></div>
+        <div class="phone-body">
+          <div class="amount-section">
+            <div class="merchant">商户简称 <span>XXXX烟草分公司</span></div>
+            <div class="amount"><em>¥</em>12000.00</div>
+          </div>
+          <div class="pay-mode-header">
+            <span class="label">选择付款方式</span>
+            <span class="service">🎧 联系客服</span>
+          </div>
+          <!-- 微资金（已展开子账户） -->
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#1989fa">💰</div>
+            <div class="pay-info"><div class="pname">微资金</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="sub-account">
+            <div class="sub-account-row">
+              <div>
+                <div class="sa-name">交通银行(0818)</div>
+                <div class="sa-sub">深圳XXXX有限公司</div>
+              </div>
+              <span class="sa-check">✓</span>
+            </div>
+          </div>
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#1989fa">💳</div>
+            <div class="pay-info"><div class="pname">个人银行卡</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#f5730e">🏢</div>
+            <div class="pay-info"><div class="pname">企业网银</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#7b1fa2">👥</div>
+            <div class="pay-info"><div class="pname">分享给好友付款</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="agreement">我已同意<a>《腾讯微企付服务协议》</a>、<a>《隐私政策》</a></div>
+          <button class="btn-green">确认付款</button>
         </div>
-        <div class="pay-option">
-          <div class="icon" style="background:#f0f4ff">🏢</div>
-          <div class="info"><div class="name">企业网银</div></div>
-        </div>
-        <button class="btn-green">确认付款</button>
       </div>
+      <div class="step-tag">① 选择微资金<br>交通银行账户</div>
     </div>
-    <div class="step-label">② 选择微资金<br>交通银行账户</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 3: 输入密码 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">请输入腾讯微企付操作密码</span></div>
-      <div class="phone-body">
-        <div style="text-align:center;padding:10px 0 4px;font-size:0.72rem;color:#888">¥12,000.00</div>
-        <div class="pwd-dots">
-          <div class="pwd-dot"></div><div class="pwd-dot"></div><div class="pwd-dot"></div>
-          <div class="pwd-dot"></div><div class="pwd-dot empty"></div><div class="pwd-dot empty"></div>
+    <!-- 2. 输入付款密码 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <div class="numpad">
-          <div class="key">1</div><div class="key">2</div><div class="key">3</div>
-          <div class="key">4</div><div class="key">5</div><div class="key">6</div>
-          <div class="key">7</div><div class="key">8</div><div class="key">9</div>
-          <div class="key dark"></div><div class="key">0</div><div class="key dark">⌫</div>
+        <div class="wxpay-header">
+          <div class="logo-area">
+            <div class="logo-icon">企</div>
+            <span class="logo-text">腾讯微企付 提供服务 ›</span>
+          </div>
+          <span class="nav-close">×</span>
+        </div>
+        <div class="phone-body">
+          <div class="amount-section">
+            <div class="merchant">请输入腾讯微企付操作密码</div>
+            <div class="amount"><em>¥</em>12,000.00</div>
+          </div>
+          <div class="pwd-dots" style="margin-top:12px">
+            <div class="pd filled"></div><div class="pd filled"></div><div class="pd filled"></div>
+            <div class="pd filled"></div><div class="pd"></div><div class="pd"></div>
+          </div>
+          <div class="numpad">
+            <div class="nk">1</div><div class="nk">2</div><div class="nk">3</div>
+            <div class="nk">4</div><div class="nk">5</div><div class="nk">6</div>
+            <div class="nk">7</div><div class="nk">8</div><div class="nk">9</div>
+            <div class="nk dark2"></div><div class="nk">0</div><div class="nk dark">⌫</div>
+          </div>
         </div>
       </div>
+      <div class="step-tag">② 输入操作密码</div>
     </div>
-    <div class="step-label">③ 输入操作密码<br>验证身份</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 4: 付款成功 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="title">腾讯支付助手</span></div>
-      <div class="phone-body">
-        <div class="success-icon" style="padding-top:40px">
-          <div class="circle">✓</div>
-          <div class="text">付款成功</div>
-          <div class="sub">具体以实际到账时间为准</div>
+    <!-- 3. 付款成功 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <button class="btn-gray" style="margin-top:30px">完成</button>
+        <div class="nav-bar">
+          <span></span>
+          <span class="nav-title">腾讯微企付</span>
+          <span style="color:#888;font-size:.7rem">···</span>
+        </div>
+        <div class="phone-body">
+          <div class="success-page">
+            <div class="success-circle">✓</div>
+            <div class="success-title">付款成功</div>
+            <div class="success-sub">具体以实际到账时间为准</div>
+          </div>
+          <button class="btn-gray" style="margin-top:20px">完成</button>
+        </div>
       </div>
+      <div class="step-tag">③ 付款成功</div>
     </div>
-    <div class="step-label">④ 付款成功</div>
-  </div>
 
+  </div>
 </div>
 
-<hr class="divider">
+<!-- ===================== 流程三：余额不足 → 充值 ===================== -->
+<div class="section">
+  <div class="section-label">付款流程 · 余额不足 → 充值后付款</div>
+  <div class="phones-row">
 
-<!-- ===== 第三部分：余额不足·充值后付款 ===== -->
-<div class="section-title">付款流程 · 余额不足 → 充值后付款</div>
-<div class="flow-row">
-
-  <!-- Step 1: 余额不足提示 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">腾讯支付助手</span></div>
-      <div class="phone-body">
-        <div class="amount-block">
-          <div class="merchant">XXXX烟草分公司</div>
-          <div class="amount"><span>¥</span>12,000.00</div>
+    <!-- 1. 余额不足提示 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <div class="pay-option selected">
-          <div class="icon" style="background:#fff3e0">💰</div>
-          <div class="info">
-            <div class="name">微资金</div>
-            <div class="sub">交通银行 · 余额 ¥1,388.08</div>
-            <div class="insufficient">余额不足，充值后可继续使用</div>
+        <div class="wxpay-header">
+          <div class="logo-area">
+            <div class="logo-icon">企</div>
+            <span class="logo-text">腾讯微企付 提供服务 ›</span>
           </div>
-          <div class="check" style="color:#fa8c16">!</div>
+          <span class="nav-close">×</span>
         </div>
-        <div class="pay-option">
-          <div class="icon" style="background:#fff1e6">💳</div>
-          <div class="info"><div class="name">个人银行卡</div></div>
+        <div class="phone-body">
+          <div class="amount-section">
+            <div class="merchant">商户简称 <span>XXXX烟草分公司</span></div>
+            <div class="amount"><em>¥</em>12000.00</div>
+          </div>
+          <div class="pay-mode-header">
+            <span class="label">选择付款方式</span>
+            <span class="service">🎧 联系客服</span>
+          </div>
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#1989fa">💰</div>
+            <div class="pay-info">
+              <div class="pname">微资金</div>
+              <div class="psub">交通银行 深圳XXXX有限公司</div>
+              <div class="pwarn">余额不足，充值后可持续使用</div>
+            </div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#1989fa">💳</div>
+            <div class="pay-info"><div class="pname">个人银行卡</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-option" style="padding-left:33px">
+            <div class="pay-icon" style="background:#e53935;width:22px;height:22px;font-size:.6rem">中</div>
+            <div class="pay-info"><div class="pname" style="font-size:.65rem">中国银行(储蓄卡)</div></div>
+            <div class="pay-radio checked"></div>
+          </div>
+          <div class="agreement">我已同意<a>《腾讯微企付服务协议》</a>、<a>《隐私政策》</a></div>
+          <button class="btn-green">确认付款</button>
         </div>
-        <button class="btn-green">去充值</button>
       </div>
+      <div class="step-tag">① 余额不足<br>可选其他方式或充值</div>
     </div>
-    <div class="step-label">① 余额不足提示<br>点击去充值</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 2: 授权打开小程序 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="title">腾讯微企付</span></div>
-      <div class="phone-body">
-        <div style="height:60px;background:#f5f5f5;border-radius:8px;margin-bottom:8px"></div>
-        <div class="modal-overlay" style="margin:0 -12px -12px;border-radius:0 0 24px 24px">
-          <div class="modal-box">
-            <div class="mtitle">即将打开"微企付经营助手"小程序</div>
-            <div class="modal-btns">
-              <button class="cancel">取消</button>
-              <button class="confirm">允许</button>
+    <!-- 2. 弹窗：打开经营助手 -->
+    <div class="phone-wrap">
+      <div class="phone" style="position:relative;min-height:240px">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="wxpay-header">
+          <div class="logo-area">
+            <div class="logo-icon">企</div>
+            <span class="logo-text">腾讯微企付 提供服务 ›</span>
+          </div>
+          <span class="nav-close">×</span>
+        </div>
+        <div class="phone-body" style="filter:blur(1px);padding-bottom:0">
+          <div class="amount-section">
+            <div class="merchant">商户简称 <span>XXXX烟草分公司</span></div>
+            <div class="amount"><em>¥</em>12000.00</div>
+          </div>
+          <div class="pay-option">
+            <div class="pay-icon" style="background:#1989fa">💰</div>
+            <div class="pay-info">
+              <div class="pname">微资金</div>
+              <div class="pwarn">余额不足，充值后可持续使用</div>
+            </div>
+          </div>
+        </div>
+        <div class="wechat-sys-modal">
+          <div class="wsm-card">
+            <div class="wsm-title">即将打开"微企付经营助手"小程序</div>
+            <div class="wsm-btns">
+              <button class="wsm-cancel">取消</button>
+              <button class="wsm-allow">允许</button>
             </div>
           </div>
         </div>
       </div>
+      <div class="step-tag">② 授权打开<br>经营助手小程序</div>
     </div>
-    <div class="step-label">② 授权打开<br>经营助手小程序</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 3: 充值页面 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">账户充值</span></div>
-      <div class="phone-body">
-        <div style="font-size:0.7rem;color:#888;margin-bottom:4px">账户余额</div>
-        <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;margin-bottom:10px">¥1,388.08</div>
-        <div style="font-size:0.68rem;color:#888;margin-bottom:6px">转账到下方充值专用账户</div>
-        <div class="bank-info-card">
-          <div class="row"><span>户　　名</span><span>XXXX有限公司</span></div>
-          <div class="row"><span>账　　号</span>
-            <span style="display:flex;align-items:center;gap:4px">6227xxxxx0818 <span class="copy-btn">复制</span></span>
+    <!-- 3. 充值页面 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-back">‹</span>
+          <span class="nav-title">充值</span>
+          <span class="nav-close">×</span>
+        </div>
+        <div class="phone-body">
+          <div class="recharge-balance">
+            <div class="rb-label">账户余额</div>
+            <div class="rb-amount">¥1,388.08</div>
           </div>
-          <div class="row"><span>银　　行</span><span>交通银行</span></div>
-          <div style="color:#888;font-size:0.62rem;margin-top:4px">四川交通银行股份有限公司</div>
+          <!-- 步骤1：绑定卡充值 -->
+          <div class="recharge-step">
+            <div class="rs-title">使用以下账户进行充值</div>
+            <div class="rs-card">
+              <div class="rs-row">
+                <span class="rk">建设银行</span>
+                <span class="rv">刘五五 <span class="copy-btn">添加</span></span>
+              </div>
+            </div>
+          </div>
+          <!-- 步骤2：转账专用账户 -->
+          <div class="recharge-step">
+            <div class="rs-title">转账到下方充值专用账户</div>
+            <div class="rs-card">
+              <div class="rs-row">
+                <span class="rk">户　名</span>
+                <span class="rv">深圳XXXX有限公司 <span class="copy-btn">复制</span></span>
+              </div>
+              <div class="rs-row">
+                <span class="rk">账　号</span>
+                <span class="rv">622700000818 <span class="copy-btn">复制</span></span>
+              </div>
+              <div class="rs-row">
+                <span class="rk">银　行</span>
+                <span class="rv">交通银行 <span class="notfound-btn">找不到</span></span>
+              </div>
+              <div style="font-size:.58rem;color:#888;margin-top:3px">四川交通银行股份有限公司</div>
+            </div>
+          </div>
+          <div class="recharge-notice">
+            ⚠ 受限制，非工作时间汇款可能无法正常入账，建议避开此时段
+          </div>
         </div>
-        <div style="font-size:0.62rem;color:#fa8c16;margin-top:8px">⚠ 请从同名账户转账，到账后自动入余额</div>
       </div>
+      <div class="step-tag">③ 充值页<br>转账至交通银行<br>专用账户</div>
     </div>
-    <div class="step-label">③ 充值页面<br>转账至交通银行专用账户</div>
-  </div>
 
-  <div class="arrow">→</div>
+    <div class="flow-arrow">→</div>
 
-  <!-- Step 4: 充值到账 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="back">＜</span><span class="title">账户充值</span></div>
-      <div class="phone-body">
-        <div style="font-size:0.7rem;color:#888;margin-bottom:4px">账户余额</div>
-        <div style="font-size:1.1rem;font-weight:700;color:#07c160;margin-bottom:4px">¥13,388.08</div>
-        <div style="font-size:0.65rem;color:#07c160;margin-bottom:10px">✓ 充值成功 +¥12,000.00</div>
-        <div style="font-size:0.68rem;color:#888;margin-bottom:4px">交通银行账户</div>
-        <div class="bank-info-card">
-          <div class="row"><span>银　　行</span><span>交通银行</span></div>
-          <div class="row"><span>账户状态</span><span style="color:#07c160">正常</span></div>
+    <!-- 4. 付款成功 -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="time">16:09</span>
+          <div class="icons"><span>▶</span><span>WiFi</span><span>🔋</span></div>
         </div>
-        <button class="btn-green" style="margin-top:16px">返回付款</button>
-      </div>
-    </div>
-    <div class="step-label">④ 充值到账<br>返回付款</div>
-  </div>
-
-  <div class="arrow">→</div>
-
-  <!-- Step 5: 付款成功 -->
-  <div class="flow-item">
-    <div class="phone">
-      <div class="phone-bar"><span class="title">腾讯支付助手</span></div>
-      <div class="phone-body">
-        <div class="success-icon" style="padding-top:40px">
-          <div class="circle">✓</div>
-          <div class="text">付款成功</div>
-          <div class="sub">具体以实际到账时间为准</div>
+        <div class="nav-bar">
+          <span></span>
+          <span class="nav-title">腾讯微企付</span>
+          <span style="color:#888;font-size:.7rem">···</span>
         </div>
-        <button class="btn-gray" style="margin-top:30px">完成</button>
+        <div class="phone-body">
+          <div class="success-page">
+            <div class="success-circle">✓</div>
+            <div class="success-title">付款成功</div>
+            <div class="success-sub">具体以实际到账时间为准</div>
+          </div>
+          <button class="btn-gray" style="margin-top:20px">完成</button>
+        </div>
       </div>
+      <div class="step-tag">④ 充值后付款成功</div>
     </div>
-    <div class="step-label">⑤ 付款成功</div>
-  </div>
 
+  </div>
 </div>
 
-<div style="text-align:center;margin-top:40px;color:#bbb;font-size:0.75rem">
-  微企付 · 微资金付款流程示意 · 交通银行三级账户体系
+<div style="text-align:center;color:#bbb;font-size:.72rem;margin-top:20px">
+  微企付 · 微资金付款流程示意 · 交通银行三级账户体系 v2.0
 </div>
 
 </body>
