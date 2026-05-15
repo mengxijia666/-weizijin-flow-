@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>微资金买家付款全流程（交通银行）</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      padding: 24px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 1.8rem;
+      color: #1a237e;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #1565c0;
+      border-radius: 12px;
+      padding: 2px 12px;
+      font-size: 0.8rem;
+      margin: 4px;
+      border: 1px solid #90caf9;
+    }
+    .diagram-container {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+    .controls {
+      text-align: center;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .controls button {
+      padding: 6px 16px;
+      border-radius: 6px;
+      border: 1px solid #90caf9;
+      background: #e3f2fd;
+      color: #1565c0;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .controls button:hover { background: #bbdefb; }
+    #diagram { min-width: 800px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+    }
+    .legend-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #999;
+      font-size: 0.78rem;
+    }
+    .footer a { color: #1565c0; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🏦 微资金买家付款全流程</h1>
+    <p>基于交通银行三级账户体系</p>
+    <div style="margin-top:10px">
+      <span class="badge">微企付</span>
+      <span class="badge">微资金</span>
+      <span class="badge">交通银行</span>
+      <span class="badge">买家付款</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="zoom(1.2)">🔍 放大</button>
+    <button onclick="zoom(0.8)">🔎 缩小</button>
+    <button onclick="resetZoom()">↺ 重置</button>
+    <button onclick="downloadSVG()">⬇ 下载 SVG</button>
+  </div>
+
+  <div class="diagram-container">
+    <div id="diagram">
+      <div class="mermaid">
+%%{init: {'theme': 'default', 'themeVariables': {'fontFamily': 'PingFang SC, Microsoft YaHei, sans-serif', 'fontSize': '14px'}}}%%
+flowchart TB
+    subgraph A["🏦 阶段一：买家开户 & 绑卡"]
+        direction TB
+        A1([买家发起开户申请])
+        A2["法人扫脸（交通银行侧）<br/>唯一开户方式，不支持绿通"]
+        A3{扫脸通过?}
+        A4[扫脸失败<br/>引导重试]
+        A5[买家会员子账簿开立成功<br/>交通银行三级账户体系]
+        A6[买家发起绑卡]
+        A7{绑卡类型?}
+        A8[同名账户绑定<br/>不需去银行]
+        A9["非同名绑定<br/>个体户法人卡<br/>需去交通银行绑定"]
+        A10[/"限制：个人卡最多4张<br/>绑定24小时后才可充值"/]
+        A1 --> A2 --> A3
+        A3 -->|否| A4 --> A2
+        A3 -->|是| A5 --> A6 --> A7
+        A7 -->|同名| A8 --> A10
+        A7 -->|非同名| A9 --> A10
+    end
+
+    subgraph B["💰 阶段二：充值入金"]
+        direction TB
+        B1[买家发起充值]
+        B2{充值来源?}
+        B3[同名账户充值]
+        B4["绑定卡充值<br/>含个体户法人同名户"]
+        B5["白名单入金<br/>交通银行分行签约维护"]
+        B6[[风控问询<br/>充值维度]]
+        B7[/"风控问询项：<br/>• 付款人身份证/营业执照 → 反洗钱<br/>• 付款账号 → 警情卡检查<br/>• wxid/付款卡 → 黑名单/高风险<br/>• 企业社会信用代码 → 风险评级<br/>• 操作人身份证 → 反洗钱"/]
+        B8["风控通过<br/>资金入账<br/>买家会员子账簿（交通银行）"]
+        B9[风控拦截<br/>对客提示或退款]
+        B1 --> B2
+        B2 -->|同名| B3 --> B6
+        B2 -->|绑定卡| B4 --> B6
+        B2 -->|白名单| B5 --> B8
+        B6 -. 问询项 .-> B7
+        B6 -->|通过| B8
+        B6 -->|拦截| B9
+    end
+
+    subgraph C["💳 阶段三：余额支付（买家付款）"]
+        direction TB
+        C1["买家在收银台选择<br/>微资金余额付款"]
+        C2{"单笔金额?<br/>交通银行免密额度"}
+        C3["银行免密<br/>直接发起划转"]
+        C4[收银台触发一次鉴权]
+        C5["鉴权通过后自动拆单<br/>每笔不超过5万元<br/>例：15.2万 → 5+5+5+0.2万（共4笔）"]
+        C6["逐笔发起划转<br/>买家账簿 → 品牌方账簿<br/>交通银行登记簿划转"]
+        C7[[交易风控问询<br/>同微企付交易逻辑]]
+        C8["付款成功<br/>公众号通知买家"]
+        C9[付款失败<br/>对客提示]
+        C1 --> C2
+        C2 -->|"单笔 ≤ 5万元"| C3 --> C6
+        C2 -->|"单笔 > 5万元"| C4 --> C5 --> C6
+        C6 --> C7
+        C7 -->|通过| C8
+        C7 -->|拦截| C9
+    end
+
+    subgraph D["↩️ 阶段四：退款"]
+        direction TB
+        D1[商户发起退款]
+        D2["调用交通银行登记簿退款接口<br/>关联原单，原路退款"]
+        D3["退款成功<br/>资金退回买家账簿<br/>公众号通知买家"]
+        D1 --> D2 --> D3
+    end
+
+    subgraph E["🏧 阶段五：余额提现"]
+        direction TB
+        E1[买家发起提现]
+        E2{提现模式?}
+        E3["手动提现<br/>操作人主动发起"]
+        E4["自动提现<br/>收银资金，次日10点自动执行<br/>充值/退款资金不生效"]
+        E5[[风控问询<br/>提现维度]]
+        E6[/"风控问询项：<br/>• 提现卡 → 风控提现策略<br/>• 营业执照/法人/受益人/付款人 → 反洗钱<br/>• 提现卡/交通银行开户行 → 反洗钱甲方名单"/]
+        E7["提现成功<br/>到账绑定的交通银行账户<br/>公众号通知买家"]
+        E8[风控拦截<br/>对客提示]
+        E1 --> E2
+        E2 -->|手动| E3 --> E5
+        E2 -->|自动| E4 --> E5
+        E5 -. 问询项 .-> E6
+        E5 -->|通过| E7
+        E5 -->|拦截| E8
+    end
+
+    A10 --> B1
+    B8 --> C1
+    C8 -->|退款场景| D1
+    C8 -->|提现场景| E1
+
+    classDef start fill:#BBDEFB,stroke:#1565C0,color:#000
+    classDef process fill:#E3F2FD,stroke:#1565C0,color:#000
+    classDef decision fill:#FFF9C4,stroke:#F57F17,color:#000
+    classDef success fill:#C8E6C9,stroke:#2E7D32,color:#000
+    classDef fail fill:#FFCCBC,stroke:#BF360C,color:#000
+    classDef risk fill:#FFF3E0,stroke:#E65100,color:#000,stroke-dasharray:5 5
+    classDef note fill:#FFFDE7,stroke:#F9A825,color:#555
+    class A1 start
+    class A2,A5,A6,A8,A9,B3,B4,B5,C1,C3,C4,C5,C6,D1,D2,E1,E3,E4 process
+    class A3,A7,B2,C2,E2 decision
+    class B8,C8,D3,E7 success
+    class A4,B9,C9,E8 fail
+    class B6,C7,E5 risk
+    class A10,B7,E6 note
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#BBDEFB;border-color:#1565C0"></div> 起始节点</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#E3F2FD;border-color:#1565C0"></div> 操作步骤</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FFF9C4;border-color:#F57F17"></div> 判断条件</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#C8E6C9;border-color:#2E7D32"></div> 成功结果</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FFCCBC;border-color:#BF360C"></div> 失败/拦截</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FFF3E0;border-color:#E65100;border-style:dashed"></div> 风控问询</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FFFDE7;border-color:#F9A825"></div> 说明注释</div>
+  </div>
+
+  <div class="footer">
+    <p>数据来源：微企付 TAPD 工作空间 #20420846 | 
+      <a href="https://tapd.woa.com/tapd_fe/20420846/story/detail/1020420846131227871" target="_blank">需求链接</a>
+    </p>
+    <p style="margin-top:4px">交通银行三级账户体系 · 微资金买家付款全流程 v1.0</p>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      flowchart: { useMaxWidth: false, htmlLabels: true },
+      securityLevel: 'loose'
+    });
+
+    let scale = 1;
+    function zoom(factor) {
+      scale *= factor;
+      const el = document.getElementById('diagram');
+      el.style.transform = `scale(${scale})`;
+      el.style.transformOrigin = 'top left';
+    }
+    function resetZoom() {
+      scale = 1;
+      const el = document.getElementById('diagram');
+      el.style.transform = '';
+    }
+    function downloadSVG() {
+      const svg = document.querySelector('#diagram svg');
+      if (!svg) return alert('图表还在加载中，请稍后再试');
+      const blob = new Blob([svg.outerHTML], {type: 'image/svg+xml'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'weizijin-buyer-payment-flow.svg';
+      a.click();
+    }
+  </script>
+</body>
+</html>
